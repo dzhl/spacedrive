@@ -1,17 +1,17 @@
+import { keepPreviousData } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { Link, useMatch } from 'react-router-dom';
 import {
 	arraysEqual,
 	Location as LocationType,
-	useCache,
 	useLibraryQuery,
-	useNodes,
 	useOnlineLocations
 } from '@sd/client';
 import { useExplorerDroppable } from '~/app/$libraryId/Explorer/useExplorerDroppable';
 import { useExplorerSearchParams } from '~/app/$libraryId/Explorer/util';
 import { AddLocationButton } from '~/app/$libraryId/settings/library/locations/AddLocationButton';
 import { Icon, SubtleButton } from '~/components';
+import { useLocale } from '~/hooks';
 
 import SidebarLink from '../../SidebarLayout/Link';
 import Section from '../../SidebarLayout/Section';
@@ -19,21 +19,24 @@ import { SeeMore } from '../../SidebarLayout/SeeMore';
 import { ContextMenu } from './ContextMenu';
 
 export default function Locations() {
-	const locationsQuery = useLibraryQuery(['locations.list'], { keepPreviousData: true });
-	useNodes(locationsQuery.data?.nodes);
-	const locations = useCache(locationsQuery.data?.items);
+	const locationsQuery = useLibraryQuery(['locations.list'], {
+		placeholderData: keepPreviousData
+	});
+	const locations = locationsQuery.data;
 	const onlineLocations = useOnlineLocations();
+
+	const { t } = useLocale();
 
 	return (
 		<Section
-			name="Locations"
+			name={t('locations')}
 			actionArea={
 				<Link to="settings/library/locations">
 					<SubtleButton />
 				</Link>
 			}
 		>
-			<SeeMore>
+			<SeeMore limit={10}>
 				{locations?.map((location) => (
 					<Location
 						key={location.id}
@@ -66,7 +69,7 @@ const Location = ({ location, online }: { location: LocationType; online: boolea
 				to={`location/${location.id}`}
 				className={clsx(
 					'border radix-state-open:border-accent',
-					isDroppable ? ' border-accent' : 'border-transparent',
+					isDroppable ? 'border-accent' : 'border-transparent',
 					className
 				)}
 			>
@@ -74,7 +77,7 @@ const Location = ({ location, online }: { location: LocationType; online: boolea
 					<Icon name="Folder" size={18} />
 					<div
 						className={clsx(
-							'absolute bottom-0.5 right-0 h-1.5 w-1.5 rounded-full',
+							'absolute bottom-0.5 right-0 size-1.5 rounded-full',
 							online ? 'bg-green-500' : 'bg-red-500'
 						)}
 					/>
